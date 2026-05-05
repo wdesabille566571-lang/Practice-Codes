@@ -230,7 +230,7 @@ public class EMS_gui extends JFrame{
 			int age = Integer.parseInt(txtAge.getText().trim());
 			
 			if (!txtBirthDate.getText().matches("\\d{2}/\\d{2}/\\d{4}")) {
-			    JOptionPane.showMessageDialog(this, "Birthdate must be MM-DD-YYYY", "Invalid Birthdate", JOptionPane.WARNING_MESSAGE);
+			    JOptionPane.showMessageDialog(this, "Birthdate must be MM/DD/YYYY", "Invalid Birthdate", JOptionPane.WARNING_MESSAGE);
 			    return;
 			}
 			
