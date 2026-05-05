@@ -1,9 +1,11 @@
 package desabille;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.*;
 
 
 public class EMS_gui extends JFrame{
@@ -12,7 +14,7 @@ public class EMS_gui extends JFrame{
 	JComboBox boxCivilStatus;
 	JRadioButton rbnMale, rbnFemale;
 	ButtonGroup grpGender;
-	JButton btnAdd;
+	JButton btnAdd, btnDelete, btnUpdate;
 	JTable table;
 	DefaultTableModel model;
 	JScrollPane scrollTable;
@@ -164,12 +166,26 @@ public class EMS_gui extends JFrame{
 		
 		
 		btnAdd = new JButton("Add Employee");
-		btnAdd.setBounds(585, 177, 120, 18);
+		btnAdd.setBounds(235, 177, 120, 18);
 		btnAdd.setFont(new Font("Serif", Font.PLAIN, 12));
 		add(btnAdd);
 		btnAdd.addActionListener(e -> addData());
-
 		
+		
+		btnUpdate = new JButton("Update Employee");
+		btnUpdate.setBounds(410, 177, 120, 18);
+		btnUpdate.setFont(new Font("Serif", Font.PLAIN, 12));
+		add(btnUpdate);
+		btnUpdate.addActionListener(e -> updateData());
+		
+		
+		btnDelete = new JButton("Delete Employee");
+		btnDelete.setBounds(585, 177, 120, 18);
+		btnDelete.setFont(new Font("Serif", Font.PLAIN, 12));
+		add(btnDelete);
+		btnDelete.addActionListener(e -> deleteData());
+
+
 		
 		String[] columns = {"Employee ID", "Fullname", "Birth", "Age", "Civil Status", "Nationality", "Gender", "Contact", "Email", "Department", "Job Title / Position"};
 		model = new DefaultTableModel(columns, 0) {
@@ -187,7 +203,36 @@ public class EMS_gui extends JFrame{
 		
 		viewTable();
 		
-	
+		
+		table.addMouseListener(new MouseAdapter(){
+			public void mouseClicked(MouseEvent e) {
+				int row = table.getSelectedRow();
+				if(row != -1) {
+					txtEmpID.setText(model.getValueAt(row, 0).toString());
+					txtFullName.setText(model.getValueAt(row, 1).toString());
+					txtBirthDate.setText(model.getValueAt(row, 2).toString());
+					txtAge.setText(model.getValueAt(row, 3).toString());
+					boxCivilStatus.setSelectedItem(model.getValueAt(row, 4).toString());
+					txtNationality.setText(model.getValueAt(row, 5).toString());
+
+	                String gender = model.getValueAt(row, 6).toString();
+
+	                if(gender.equals("Male")) {
+	                    rbnMale.setSelected(true);
+	                } 
+	                else if(gender.equals("Female")) {
+	                    rbnFemale.setSelected(true);
+	                }
+	                
+					txtContactNum.setText(model.getValueAt(row, 7).toString());
+					txtEmail.setText(model.getValueAt(row, 8).toString());
+					txtDepartment.setText(model.getValueAt(row, 9).toString());
+					txtJobTitle.setText(model.getValueAt(row, 10).toString());
+				}
+			}
+		});
+
+	    
 		
 		setLayout(null);
 		setTitle("WYZ EMPLOYEE MANAGEMENT SYSTEM");
@@ -250,6 +295,12 @@ public class EMS_gui extends JFrame{
 			}
 			
 			
+			int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to add this employee?", "Confirm Add", JOptionPane.YES_NO_OPTION);
+		    if (confirm != JOptionPane.YES_OPTION) {
+		        return;
+		    }
+			
+			
 			String data = empId + " # "
 						+ txtFullName.getText().trim() + " # "
 						+ txtBirthDate.getText().trim() + " # "
@@ -279,8 +330,205 @@ public class EMS_gui extends JFrame{
 			return;
 		}
 		
+		JOptionPane.showMessageDialog(this,"Employee added successfully.");
 		clear();
+		table.clearSelection();
 		viewTable();
+	}
+	
+	
+	
+	void deleteData() {
+		int selectedRow = table.getSelectedRow();
+	    
+	    if (selectedRow == -1) {
+	        JOptionPane.showMessageDialog(this, "Please select an employee to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+	        return;
+	    }
+	    
+	    
+	    int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this employee?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+	    if (confirm != JOptionPane.YES_OPTION) {
+	        return;
+	    }
+
+	    
+
+	    ArrayList<String> lines = new ArrayList<>();
+	    try {
+	    	FileReader fr = new FileReader("Employees.txt");
+	        BufferedReader br = new BufferedReader(fr);
+	        
+	        String line = "";
+	        int rowIndex = 0;
+	        
+	        while ((line = br.readLine()) != null) {
+	        	if (rowIndex != selectedRow) {
+	        		lines.add(line);
+	        	}
+	        	
+	        	rowIndex++;
+	        }
+	        
+	        br.close();
+	    } catch (IOException e) {
+	    	JOptionPane.showMessageDialog(this, "Error Occurred: " + e.getMessage(), "Delete Error", JOptionPane.ERROR_MESSAGE);
+	    	return;
+	    }
+	    
+	    
+	    
+	    try {
+	        FileWriter fw = new FileWriter("Employees.txt");
+	        BufferedWriter bw = new BufferedWriter(fw);
+
+	        for (String data : lines) {
+	        	bw.write(data);
+	        	bw.newLine();
+	        }
+
+	        bw.close();
+	    } catch (IOException e) {
+	        JOptionPane.showMessageDialog(this, "Error Occurred: " + e.getMessage(), "Delete Error", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
+	    
+	    JOptionPane.showMessageDialog(this,"Employee deleted successfully.");
+	    clear();
+	    table.clearSelection();
+	    viewTable();
+	}
+	
+	
+	
+	void updateData() {
+		int selectedRow = table.getSelectedRow();
+	    
+	    if (selectedRow == -1) {
+	        JOptionPane.showMessageDialog(this, "Please select an employee to update.", "No Selection", JOptionPane.WARNING_MESSAGE);
+	        return;
+	    }
+	    
+	    
+	    if (txtEmpID.getText().trim().isEmpty() || txtFullName.getText().trim().isEmpty() || txtBirthDate.getText().trim().isEmpty() ||
+				txtAge.getText().trim().isEmpty() || boxCivilStatus.getSelectedIndex() == 0 || txtNationality.getText().trim().isEmpty() ||
+				txtContactNum.getText().trim().isEmpty() || txtEmail.getText().trim().isEmpty() || txtDepartment.getText().trim().isEmpty() || 
+				txtJobTitle.getText().trim().isEmpty()) {
+				JOptionPane.showMessageDialog(this, "Please fill-up the requirements.", "Missing Requirement/s", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+	    
+		String gender = "";
+		if (rbnMale.isSelected()) {
+			gender = "Male";
+		} else if (rbnFemale.isSelected()) {
+			gender = "Female";
+		}
+			
+		if (!rbnMale.isSelected() && !rbnFemale.isSelected()) {
+			JOptionPane.showMessageDialog(this, "Please select gender.", "Missing Requirement", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+	    
+			
+	    int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to update this employee?", "Confirm Update", JOptionPane.YES_NO_OPTION);
+	    if (confirm != JOptionPane.YES_OPTION) {
+	        return;
+	    }
+	    
+	    
+	    
+	    ArrayList<String> lines = new ArrayList<>();
+	    try {
+	    	int empId = Integer.parseInt(txtEmpID.getText().trim());
+			int age = Integer.parseInt(txtAge.getText().trim());
+			
+			if (!txtBirthDate.getText().matches("\\d{2}/\\d{2}/\\d{4}")) {
+			    JOptionPane.showMessageDialog(this, "Birthdate must be MM/DD/YYYY", "Invalid Birthdate", JOptionPane.WARNING_MESSAGE);
+			    return;
+			}
+			
+			if (age < 18) {
+				JOptionPane.showMessageDialog(this, "Employee's age is not eligible.", "Age Not Eligible", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+			if (!txtContactNum.getText().trim().startsWith("09") || !txtContactNum.getText().trim().matches("\\d{11}")) {
+				JOptionPane.showMessageDialog(this, "Contact number must contain 11 numbers & starts with \"09\"", "Invalid Contact Number", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+			if (!txtEmail.getText().contains("@") || !txtEmail.getText().contains(".")) {
+				JOptionPane.showMessageDialog(this, "Invalid email format.", "Invalid Email", JOptionPane.WARNING_MESSAGE);
+			    return;
+			}
+			
+			
+			
+	    	FileReader fr = new FileReader("Employees.txt");
+	        BufferedReader br = new BufferedReader(fr);
+	        
+	        String line = "";
+	        int rowIndex = 0;
+	        
+	        while ((line = br.readLine()) != null) {
+	        	if (rowIndex == selectedRow) {
+	    			if (rbnMale.isSelected()) {
+	    				gender = "Male";
+	    			} else if (rbnFemale.isSelected()) {
+	    				gender = "Female";
+	    			}
+	    			
+	        		String updateData = empId + " # "
+							+ txtFullName.getText().trim() + " # "
+							+ txtBirthDate.getText().trim() + " # "
+							+ age + " # "
+							+ boxCivilStatus.getSelectedItem().toString() + " # "
+							+ txtNationality.getText().trim() + " # "
+							+ gender + " # "
+							+ txtContactNum.getText().trim() + " # "
+							+ txtEmail.getText().trim() + " # "
+							+ txtDepartment.getText().trim() + " # "
+							+ txtJobTitle.getText().trim();
+	        		lines.add(updateData);
+	        	} else {
+	        		lines.add(line);
+	        	}
+	        	
+	        	rowIndex++;
+	        }
+	        
+	        br.close();
+	    } catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(this, "Error Occurred: " + e.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+			return;
+	    } catch (IOException e) {
+	    	JOptionPane.showMessageDialog(this, "Error Occurred: " + e.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+	    	return;
+	    }
+	    
+	    
+	    
+	    try {
+	        FileWriter fw = new FileWriter("Employees.txt");
+	        BufferedWriter bw = new BufferedWriter(fw);
+
+	        for (String data : lines) {
+	        	bw.write(data);
+	        	bw.newLine();
+	        }
+
+	        bw.close();
+	    } catch (IOException e) {
+	        JOptionPane.showMessageDialog(this, "Error Occurred: " + e.getMessage(), "Update Error", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
+	    
+	    JOptionPane.showMessageDialog(this,"Employee updated successfully.");
+	    clear();
+	    table.clearSelection();
+	    viewTable();
 	}
 	
 	
