@@ -1,21 +1,21 @@
 package desabille;
 
-import java.awt.Font;
+import java.awt.*;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 
 public class EMS_gui extends JFrame{
-	static JLabel lblTitle, lblEmpID, lblFullName, lblBirthDate, lblAge, lblCivilStatus, lblNationality, lblGender, lblContactNum, lblEmail, lblDepartment, lblJobTitle;
-	static JTextField txtEmpID, txtFullName, txtBirthDate, txtAge, txtNationality, txtContactNum, txtEmail, txtDepartment, txtJobTitle;
-	static JComboBox boxCivilStatus;
-	static JRadioButton rbnMale, rbnFemale;
-	static ButtonGroup grpGender;
-	static JButton btnAdd;
-	static JTable table;
-	static DefaultTableModel model;
-	static JScrollPane scrollTable;
+	JLabel lblTitle, lblEmpID, lblFullName, lblBirthDate, lblAge, lblCivilStatus, lblNationality, lblGender, lblContactNum, lblEmail, lblDepartment, lblJobTitle;
+	JTextField txtEmpID, txtFullName, txtBirthDate, txtAge, txtNationality, txtContactNum, txtEmail, txtDepartment, txtJobTitle;
+	JComboBox boxCivilStatus;
+	JRadioButton rbnMale, rbnFemale;
+	ButtonGroup grpGender;
+	JButton btnAdd;
+	JTable table;
+	DefaultTableModel model;
+	JScrollPane scrollTable;
 	
 	
 	public static void main(String[] args) {
@@ -164,10 +164,11 @@ public class EMS_gui extends JFrame{
 		
 		
 		btnAdd = new JButton("Add Employee");
-		btnAdd.setBounds(590, 177, 110, 18);
+		btnAdd.setBounds(585, 177, 120, 18);
 		btnAdd.setFont(new Font("Serif", Font.PLAIN, 12));
 		add(btnAdd);
-		btnAdd.addActionListener(e -> saveData());
+		btnAdd.addActionListener(e -> addData());
+
 		
 		
 		String[] columns = {"Employee ID", "Fullname", "Birth", "Age", "Civil Status", "Nationality", "Gender", "Contact", "Email", "Department", "Job Title / Position"};
@@ -184,6 +185,9 @@ public class EMS_gui extends JFrame{
 		add(scrollTable);
 		
 		
+		viewTable();
+		
+	
 		
 		setLayout(null);
 		setTitle("WYZ EMPLOYEE MANAGEMENT SYSTEM");
@@ -197,7 +201,7 @@ public class EMS_gui extends JFrame{
 	
 	
 	
-	void saveData() {
+	void addData() {
 		if (txtEmpID.getText().trim().isEmpty() || txtFullName.getText().trim().isEmpty() || txtBirthDate.getText().trim().isEmpty() ||
 			txtAge.getText().trim().isEmpty() || boxCivilStatus.getSelectedIndex() == 0 || txtNationality.getText().trim().isEmpty() ||
 			txtContactNum.getText().trim().isEmpty() || txtEmail.getText().trim().isEmpty() || txtDepartment.getText().trim().isEmpty() || 
@@ -225,17 +229,24 @@ public class EMS_gui extends JFrame{
 			int empId = Integer.parseInt(txtEmpID.getText().trim());
 			int age = Integer.parseInt(txtAge.getText().trim());
 			
+			if (!txtBirthDate.getText().matches("\\d{2}/\\d{2}/\\d{4}")) {
+			    JOptionPane.showMessageDialog(this, "Birthdate must be MM-DD-YYYY", "Invalid Birthdate", JOptionPane.WARNING_MESSAGE);
+			    return;
+			}
 			
 			if (age < 18) {
-				JOptionPane.showMessageDialog(this, "Employee's age not elligable.", "Age Not Elligable", JOptionPane.WARNING_MESSAGE);
-				clear();
+				JOptionPane.showMessageDialog(this, "Employee's age is not eligible.", "Age Not Eligible", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			
 			if (!txtContactNum.getText().trim().startsWith("09") || !txtContactNum.getText().trim().matches("\\d{11}")) {
 				JOptionPane.showMessageDialog(this, "Contact number must contain 11 numbers & starts with \"09\"", "Invalid Contact Number", JOptionPane.WARNING_MESSAGE);
-				clear();
 				return;
+			}
+			
+			if (!txtEmail.getText().contains("@") || !txtEmail.getText().contains(".")) {
+				JOptionPane.showMessageDialog(this, "Invalid email format.", "Invalid Email", JOptionPane.WARNING_MESSAGE);
+			    return;
 			}
 			
 			
@@ -261,10 +272,10 @@ public class EMS_gui extends JFrame{
 			
 			bw.close();
 		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(this, "Error Occured: " + e.getMessage(), "Data not saved", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Error Occurred: " + e.getMessage(), "Data not saved", JOptionPane.ERROR_MESSAGE);
 			return;
 		} catch (IOException e){
-			JOptionPane.showMessageDialog(this, "Error Occured: " + e.getMessage(), "Data not saved", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Error Occurred: " + e.getMessage(), "Data not saved", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		
@@ -289,11 +300,8 @@ public class EMS_gui extends JFrame{
 			
 			br.close();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this, "ERROR OCCURED: " + e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "ERROR OCCURRED: " + e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 		}
-		
-		revalidate();
-		repaint();
 	}
 	
 	
