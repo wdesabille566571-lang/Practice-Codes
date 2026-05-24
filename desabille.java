@@ -92,7 +92,7 @@ public class desabille extends JFrame {
 		scrollTable.setBounds(240, 10, 470, 500);
 		scrollTable.setFont(new Font("Serif", Font.PLAIN, 12));
 		add(scrollTable);
-		scrollTable.addMouseListener(new MouseAdapter() {
+		table.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				int row	 = table.getSelectedRow();
 				if (row != -1) {
